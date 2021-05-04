@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated Aug 20, 2010 7:06:32 PM by Hibernate Tools 3.3.0.GA -->
+<hibernate-mapping>
+    <class name="com.test.Account" table="ACCOUNT">
+        <id name="number" type="int" access="field">
+            <column name="NUMBER" />
+            <generator class="assigned" />
+        </id>
+        <property name="balance" type="float" access="field">
+            <column name="BALANCE" />
+        </property>
+    </class>
+</hibernate-mapping>

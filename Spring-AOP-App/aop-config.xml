@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd">
+ 
+ 	<!--CONFIG-->
+	<bean id="accountsTarget"
+	class="org.springframework.aop.framework.ProxyFactoryBean">
+		<!-- <property name="proxyInterfaces">
+			<value>ILogic</value>
+		</property> -->
+		<property name="target">
+			<ref bean="accountsBean"/>
+		</property>
+		<property name="interceptorNames">
+			<list>
+				<value>beforeAdvisorBean</value>				 
+			</list>
+		</property>
+	</bean>
+
+	<!--CLASS-->
+	<bean id="accountsBean" class=" com.server.Accounts"/>
+
+	<!--ADVICE-->
+	<bean id="beforeAdviceBean" class="com.server.BeforeAdviceAccounts"/>
+	 
+	<!--ADVISOR-->
+	<!--An advisor assembles pointcuts and advice-->
+	<bean id="beforeAdvisorBean"
+	class="org.springframework.aop.support.RegexpMethodPointcutAdvisor">
+		<property name="advice">
+			<ref bean="beforeAdviceBean"/>
+		</property>
+		<property name="pattern">
+			<value>.*</value>
+			<!-- <value>foo.*</value>			 -->
+		</property>
+	</bean>	
+	 
+</beans>

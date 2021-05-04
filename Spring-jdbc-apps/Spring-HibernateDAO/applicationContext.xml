@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:context="http://www.springframework.org/schema/context"
+xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context.xsd">
+  
+    <!-- Configurer that replaces ${...} placeholders with values from properties files -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>jdbc.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- DAO -->
+    <bean id="userDao" class="HibernateUserDao">
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+    </bean>
+
+    <!-- Test Object -->
+    <bean id="Target" class="TestUserDAO">
+        <property name="dao">
+            <!--ref bean="userDao"/-->
+			<ref bean="HibernateTransactionDAO"/><!--Transactionware bean-->
+        </property>         
+    </bean>     
+           
+
+    <!-- The JNDI DataSource for J2EE environments -->
+    <!--
+    <bean id="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+      <property name="jndiName">
+	    <value>java:comp/env/jdbc/mydb</value>
+	 </property>
+    </bean>
+    -->
+
+	<!--<bean 
+    	id="jndiObject"
+    	abstract="true"
+    	class="org.springframework.jndi.JndiObjectFactoryBean"
+    >
+        <property name="jndiEnvironment">
+            <props>
+                <prop key="java.naming.factory.initial">weblogic.jndi.WLInitialContextFactory</prop>
+                <prop key="java.naming.provider.url">t3://localhost:7001</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="semJDBCDataSource" parent="jndiObject">
+        <property name="jndiName" value="jdbc/semJDBCDataSource"/>
+    </bean-->
+    
+
+    <!-- The DBCP DataSource -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName">
+            <value>${jdbc.driverClassName}</value>
+        </property>
+        <property name="url">
+            <value>${jdbc.url}</value>
+        </property>
+        <property name="username">
+            <value>${jdbc.username}</value>
+        </property>
+        <property name="password">
+            <value>${jdbc.password}</value>
+        </property>
+    </bean>
+
+    <!-- Hibernate Session Factory Bean Configuration-->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="mappingResources">
+            <list>
+                <value>user.hbm.xml</value>
+                <!--value>Test.hbm.xml</value-->                 
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>                
+               <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+			   <prop key="hibernate.hbm2ddl.auto">create</prop>  
+			   <prop key="hibernate.show_sql">true</prop>		                
+                
+                <prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>
+                <prop key="hibernate.max_fetch_depth">3</prop>
+            </props>
+        </property>
+        <property name="dataSource">
+            <ref bean="dataSource"/>
+        </property>
+		<!--property name="ConfigLocation">
+            <value>Hibernate.cfg.xml</value>
+        </property-->
+    </bean>
+
+    <!-- The transactionmanager to use for regular non JTA datasource -->
+    <bean id="transactionManager"  class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="dataSource">
+            <ref bean="dataSource"/>
+        </property>
+        <property name="sessionFactory">
+            <ref bean="sessionFactory"/>
+        </property>
+    </bean>
+
+	<bean id="HibernateTransactionDAO"
+      class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+		<property name="transactionManager">
+		    <ref bean="transactionManager"/>
+		</property>
+		<property name="target">
+		    <ref bean="userDao"/>
+		</property>
+		<property name="transactionAttributes">
+			<props>
+				<prop key="*">PROPAGATION_REQUIRED</prop>
+			</props>
+		</property>
+	</bean>
+
+</beans>
